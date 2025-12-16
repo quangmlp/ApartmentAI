@@ -1,0 +1,38 @@
+server:
+  port: 22986
+  servlet:
+    context-path: /demo
+
+spring:
+  datasource:
+    url: jdbc:mysql://mysql-26ace53e-huythetime1-e755.i.aivencloud.com:22986/defaultdb?ssl-mode=REQUIRED
+    username: avnadmin
+    password: AVNS_sVpC9ImtuDTsoEaeQLb
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  task:
+    scheduling:
+      pool:
+        size: 2
+
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: huythetime1@gmail.com  # Your Gmail address
+    password: jocw yheg izmw rfip  # Your App Password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+jwt:
+  signerKey: FKYyDnlrdzZFsjM/MMaScBjX4j5nLD+TkE3+7rtPVOc72+A7MOOTWTG4KXTEuf1G4L8/OomvgqIDJbFkYdsiPg==
+  valid-duration: 3600
+  refreshable-duration: 36000
+

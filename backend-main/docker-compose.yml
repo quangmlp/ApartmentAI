@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  backend:
+    build: ..
+    restart: always
+    ports:
+      - "22986:22986"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-26ace53e-huythetime1-e755.i.aivencloud.com:22986/defaultdb?ssl-mode=REQUIRED
+      SPRING_DATASOURCE_USERNAME: avnadmin
+      SPRING_DATASOURCE_PASSWORD: AVNS_sVpC9ImtuDTsoEaeQLb
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SERVER_PORT: 22986
