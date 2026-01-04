@@ -1,0 +1,289 @@
+/* =====================================================
+   Home Page - Modern Design
+   ===================================================== */
+
+.home-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f5f7fa 0%, #ffffff 100%);
+}
+
+/* =====================================================
+   Hero Section
+   ===================================================== */
+
+.hero-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 100px 32px 80px;
+  gap: 60px;
+}
+
+.hero-content {
+  flex: 1;
+  max-width: 600px;
+}
+
+.hero-content h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  line-height: 1.2;
+  margin-bottom: 24px;
+}
+
+.brand-highlight {
+  color: #1a237e;
+  background: linear-gradient(135deg, #1a237e, #3949ab);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-description {
+  font-size: 1.15rem;
+  color: #4a4a68;
+  line-height: 1.7;
+  margin-bottom: 32px;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 16px;
+}
+
+.btn-primary-hero {
+  display: inline-block;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #1a237e, #3949ab);
+  color: white;
+  text-decoration: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(26, 35, 126, 0.3);
+}
+
+.btn-primary-hero:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(26, 35, 126, 0.4);
+  color: white;
+}
+
+.btn-secondary-hero {
+  display: inline-block;
+  padding: 14px 32px;
+  background: transparent;
+  color: #1a237e;
+  text-decoration: none;
+  border: 2px solid #1a237e;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary-hero:hover {
+  background: #1a237e;
+  color: white;
+}
+
+.hero-visual {
+  flex-shrink: 0;
+}
+
+.hero-card {
+  width: 280px;
+  height: 280px;
+  background: linear-gradient(135deg, #1a237e, #3949ab);
+  border-radius: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 20px 60px rgba(26, 35, 126, 0.3);
+  animation: float 4s ease-in-out infinite;
+}
+
+.hero-icon {
+  font-size: 6rem;
+  color: white;
+  opacity: 0.9;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+/* =====================================================
+   Features Section
+   ===================================================== */
+
+.features-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 32px;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.section-header h2 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 12px;
+}
+
+.section-header p {
+  font-size: 1.1rem;
+  color: #8e8ea9;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 28px;
+}
+
+.feature-card {
+  background: white;
+  padding: 32px;
+  border-radius: 16px;
+  border: 1px solid #e8ecf1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+  border-color: #1a237e;
+}
+
+.feature-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, rgba(26, 35, 126, 0.1), rgba(57, 73, 171, 0.1));
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  color: #1a237e;
+  margin-bottom: 20px;
+}
+
+.feature-card h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 10px;
+}
+
+.feature-card p {
+  color: #8e8ea9;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* =====================================================
+   CTA Section
+   ===================================================== */
+
+.cta-section {
+  background: linear-gradient(135deg, #1a237e, #3949ab);
+  padding: 80px 32px;
+  margin-top: 40px;
+}
+
+.cta-content {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+  color: white;
+}
+
+.cta-content h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.cta-content p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  margin-bottom: 32px;
+}
+
+.cta-button {
+  display: inline-block;
+  padding: 16px 40px;
+  background: white;
+  color: #1a237e;
+  text-decoration: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  color: #1a237e;
+}
+
+/* =====================================================
+   Footer
+   ===================================================== */
+
+.home-footer {
+  text-align: center;
+  padding: 32px;
+  background: #f5f7fa;
+  color: #8e8ea9;
+  font-size: 0.9rem;
+}
+
+/* =====================================================
+   Responsive
+   ===================================================== */
+
+@media (max-width: 768px) {
+  .hero-section {
+    flex-direction: column;
+    text-align: center;
+    padding: 80px 20px 60px;
+  }
+  
+  .hero-content h1 {
+    font-size: 2rem;
+  }
+  
+  .hero-buttons {
+    justify-content: center;
+  }
+  
+  .hero-visual {
+    display: none;
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .section-header h2 {
+    font-size: 1.75rem;
+  }
+  
+  .cta-content h2 {
+    font-size: 1.5rem;
+  }
+}

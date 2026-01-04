@@ -30,6 +30,7 @@ public class User {
     String lastName;
     LocalDate dob;
 
+    @Column(unique = true, nullable = false)
     String email;
 
     @ManyToMany

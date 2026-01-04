@@ -36,6 +36,7 @@ public class Guest {
     private LocalDate dob;
 
     @NotNull
+    @Column(unique = true, nullable = false)
     private String email;
 
     // Constructors, Getters, and Setters

@@ -24,8 +24,7 @@ public class SecurityConfig {
 
     private final String[] PUBLIC_ENDPOINTS = {
             "/users", "/auth/login", "/auth/introspect", "/auth/logout", "/auth/refresh",
-            "users/create", "/auth/verify-otp", "/auth/request-otp", "/auth/reset-password",
-            "/chat"
+            "users/create", "/auth/verify-otp", "/auth/request-otp", "/auth/reset-password"
     };
 
     @Autowired
@@ -46,7 +45,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow OPTIONS requests
                         .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/chat").permitAll()
                         .requestMatchers("/admin", "/users/admin").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer

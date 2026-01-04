@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { FaEye, FaEyeSlash, FaUser, FaLock, FaBuilding, FaEnvelope, FaCalendar, FaUserCircle } from "react-icons/fa";
 import chungCu from "./Chung_cu4.jpeg";
+import "./Signup.css";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -22,7 +24,7 @@ const Signup = () => {
     setError("");
 
     try {
-      const response = await fetch("https://backend-6w7s.onrender.com/demo/users/create", {
+      const response = await fetch("http://localhost:22986/demo/users/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -51,184 +53,155 @@ const Signup = () => {
   };
 
   return (
-    <div className="row g-0 auth-wrapper">
-      <div className="col-12 col-md-5 col-lg-6 h-100">
-        <div className="auth-background-holder"></div>
-        <div style={{ width: '100%', height: '100%' }}>
-          <img
-            src={chungCu}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-            }}
-            alt="Chung cư"
-          />
+    <div className="signup-page">
+      {/* Left side - Image */}
+      <div className="signup-image-side">
+        <div className="signup-image-overlay"></div>
+        <img src={chungCu} alt="Chung cư" className="signup-background-image" />
+        <div className="signup-image-content">
+          <FaBuilding className="signup-hero-icon" />
+          <h1>ApartmentAI</h1>
+          <p>Tham gia cộng đồng cư dân thông minh</p>
         </div>
       </div>
 
-      <div className="col-12 col-md-7 col-lg-6 auth-main-col text-center">
-        <div className="d-flex flex-column align-content-end">
-          <div className="auth-body mx-auto">
-            <p>Đăng ký tài khoản</p>
-            <div className="auth-form-container text-start">
-              <form className="auth-form" onSubmit={handleSignup}>
-                {error && <div className="alert alert-danger">{error}</div>}
+      {/* Right side - Form */}
+      <div className="signup-form-side">
+        <div className="signup-form-container">
+          <div className="signup-form-header">
+            <h2>Tạo tài khoản mới</h2>
+            <p>Điền thông tin để đăng ký</p>
+          </div>
 
-                <div className="mb-3">
+          <form className="signup-form" onSubmit={handleSignup} autoComplete="off">
+            {error && (
+              <div className="signup-error-alert">
+                <span className="error-icon">⚠️</span>
+                {error}
+              </div>
+            )}
+
+            <div className="signup-row">
+              <div className="signup-input-group">
+                <label htmlFor="lastName">Họ</label>
+                <div className="signup-input-wrapper">
+                  <FaUserCircle className="input-icon" />
                   <input
                     type="text"
-                    className="form-control"
-                    placeholder="Tên đăng nhập"
-                    value={formData.username}
-                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                    disabled={loading}
-                    style={{
-                      width: '100%',
-                      height: '40px',
-                      padding: '8px 12px',
-                      fontSize: '16px',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <div className="password-field" style={{ position: 'relative' }}>
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      className="form-control"
-                      placeholder="Mật khẩu"
-                      value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      disabled={loading}
-                      style={{
-                        width: '100%',
-                        height: '40px',
-                        padding: '8px 60px 8px 12px',
-                        fontSize: '16px',
-                        boxSizing: 'border-box',
-                      }}
-                    />
-                    <span
-                      className="toggle-password"
-                      onClick={() => setShowPassword((prev) => !prev)}
-                      tabIndex={-1}
-                      style={{
-                        position: 'absolute',
-                        right: '10px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        cursor: 'pointer',
-                        color: '#007bff',
-                        fontSize: '14px',
-                        userSelect: 'none',
-                      }}
-                    >
-                      {showPassword ? "Ẩn" : "Hiện"}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mb-3">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Họ"
+                    id="lastName"
+                    placeholder="Nhập họ"
                     value={formData.lastName}
                     onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                     disabled={loading}
-                    style={{
-                      width: '100%',
-                      height: '40px',
-                      padding: '8px 12px',
-                      fontSize: '16px',
-                      boxSizing: 'border-box',
-                    }}
+                    className="signup-input"
                   />
                 </div>
+              </div>
 
-                <div className="mb-3">
+              <div className="signup-input-group">
+                <label htmlFor="firstName">Tên</label>
+                <div className="signup-input-wrapper">
+                  <FaUserCircle className="input-icon" />
                   <input
                     type="text"
-                    className="form-control"
-                    placeholder="Tên"
+                    id="firstName"
+                    placeholder="Nhập tên"
                     value={formData.firstName}
                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                     disabled={loading}
-                    style={{
-                      width: '100%',
-                      height: '40px',
-                      padding: '8px 12px',
-                      fontSize: '16px',
-                      boxSizing: 'border-box',
-                    }}
+                    className="signup-input"
                   />
                 </div>
-
-                <div className="mb-3">
-                  <input
-                    type="date"
-                    className="form-control"
-                    placeholder="Ngày sinh"
-                    value={formData.dob}
-                    onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-                    disabled={loading}
-                    style={{
-                      width: '100%',
-                      height: '40px',
-                      padding: '8px 12px',
-                      fontSize: '16px',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <input
-                    type="email"
-                    className="form-control"
-                    placeholder="Email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    disabled={loading}
-                    style={{
-                      width: '100%',
-                      height: '40px',
-                      padding: '8px 12px',
-                      fontSize: '16px',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                </div>
-
-                <div className="text-center">
-                  <button
-                    type="submit"
-                    className="btn btn-primary w-100 theme-btn mx-auto"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <span
-                        className="spinner-border spinner-border-sm"
-                        role="status"
-                        aria-hidden="true"
-                      ></span>
-                    ) : (
-                      "Đăng ký"
-                    )}
-                  </button>
-                </div>
-              </form>
-
-              <hr />
-              <div className="auth-option text-center pt-2">
-                Đã có tài khoản?{" "}
-                <Link className="text-link" to="/login">
-                  Đăng nhập
-                </Link>
               </div>
             </div>
+
+            <div className="signup-input-group">
+              <label htmlFor="username">Tên đăng nhập</label>
+              <div className="signup-input-wrapper">
+                <FaUser className="input-icon" />
+                <input
+                  type="text"
+                  id="username"
+                  placeholder="Nhập tên đăng nhập"
+                  value={formData.username}
+                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                  disabled={loading}
+                  className="signup-input"
+                />
+              </div>
+            </div>
+
+            <div className="signup-input-group">
+              <label htmlFor="email">Email</label>
+              <div className="signup-input-wrapper">
+                <FaEnvelope className="input-icon" />
+                <input
+                  type="email"
+                  id="email"
+                  placeholder="Nhập email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  disabled={loading}
+                  className="signup-input"
+                />
+              </div>
+            </div>
+
+            <div className="signup-input-group">
+              <label htmlFor="dob">Ngày sinh</label>
+              <div className="signup-input-wrapper">
+                <FaCalendar className="input-icon" />
+                <input
+                  type="date"
+                  id="dob"
+                  value={formData.dob}
+                  onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+                  disabled={loading}
+                  className="signup-input date-input"
+                />
+              </div>
+            </div>
+
+            <div className="signup-input-group">
+              <label htmlFor="password">Mật khẩu</label>
+              <div className="signup-input-wrapper">
+                <FaLock className="input-icon" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  placeholder="Nhập mật khẩu"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  disabled={loading}
+                  className="signup-input"
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" className="signup-submit-btn" disabled={loading}>
+              {loading ? (
+                <span className="signup-spinner"></span>
+              ) : (
+                "Đăng ký"
+              )}
+            </button>
+          </form>
+
+          <div className="signup-divider">
+            <span>hoặc</span>
+          </div>
+
+          <div className="signup-login-prompt">
+            Đã có tài khoản?{" "}
+            <Link to="/login" className="login-link">Đăng nhập</Link>
           </div>
         </div>
       </div>

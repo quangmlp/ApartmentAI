@@ -10,6 +10,7 @@ import reportWebVitals from "./reportWebVitals";
 // Import thư viện và CSS
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import "./styles/theme.css"; // Unified theme system
 import "./scss/auth.scss";
 import "./scss/theme.scss";
 import "./css/theme.min.css"; // Chỉ cần một phiên bản CSS (min hoặc không)

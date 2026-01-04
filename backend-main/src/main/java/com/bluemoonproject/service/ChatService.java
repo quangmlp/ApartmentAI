@@ -2,6 +2,10 @@ package com.bluemoonproject.service;
 
 import com.bluemoonproject.dto.request.ChatRequestDto;
 import com.bluemoonproject.dto.response.ChatResponse;
+import com.bluemoonproject.entity.Room;
+import com.bluemoonproject.entity.User;
+import com.bluemoonproject.repository.RoomRepository;
+import com.bluemoonproject.repository.UserRepository;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -9,7 +13,11 @@ import jakarta.annotation.PostConstruct;
 import jakarta.persistence.*;
 import jakarta.persistence.metamodel.EntityType;
 import okhttp3.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value; // Add this import
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.annotation.SessionScope;
 
 import java.io.IOException;
@@ -25,8 +33,15 @@ public class ChatService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    // API Key Groq (Miễn phí & Nhanh)
-    private static final String API_KEY = "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";
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private RoomRepository roomRepository;
+
+    // Remove the hardcoded API_KEY
+    @Value("${groq.api.key}")
+    private String apiKey;
+    
     private static final String MODEL_NAME = "openai/gpt-oss-120b";
     private static final String API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
@@ -97,6 +112,33 @@ public class ChatService {
         String userMsg = request.getMessage().trim();
         addToHistory("user", userMsg);
 
+        // --- AUTHORIZATION CHECK ---
+        String restrictionContext = null;
+        try {
+            var authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.isAuthenticated() && !authentication.getName().equals("anonymousUser")) {
+                String username = authentication.getName();
+                User user = userRepository.findByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+
+                boolean isAdmin = user.getRoles().stream()
+                        .anyMatch(role -> role.getName().equals("ADMIN"));
+
+                if (!isAdmin) {
+                    List<Room> rooms = roomRepository.findRoomsByUserId(user.getId());
+                    if (rooms.isEmpty()) {
+                        restrictionContext = "RESTRICTION: The user is NOT an ADMIN and does NOT own any apartment. You MUST NOT answer any questions related to specific apartments or residents. Return 'NOT_AUTHORIZED' if they ask about apartment data.";
+                    } else {
+                        String roomNumbers = rooms.stream().map(Room::getRoomNumber).collect(Collectors.joining(", "));
+                        restrictionContext = "RESTRICTION: The user is a resident of Room(s): [" + roomNumbers + "]. You MUST restrict all queries to these rooms. If the user asks about another room, return 'NOT_AUTHORIZED'. You MUST add `WHERE room_number IN ('" + roomNumbers.replace(", ", "', '") + "')` to all queries involving rooms.";
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Auth check failed: " + e.getMessage());
+        }
+        // ---------------------------
+
         try {
             // 1. Phân loại Intent (Hỏi dữ liệu hay Chém gió)
             if (isChitChat(userMsg)) {
@@ -106,10 +148,16 @@ public class ChatService {
             }
 
             // 2. Sinh SQL với cơ chế Tự Sửa Lỗi (Self-Correction)
-            String sql = generateSqlWithRetry(userMsg);
+            String sql = generateSqlWithRetry(userMsg, restrictionContext);
             
             if (sql.contains("NOT_SQL")) {
                 String reply = "Xin lỗi, câu hỏi này không liên quan đến dữ liệu hệ thống.";
+                addToHistory("assistant", reply);
+                return new ChatResponse(reply);
+            }
+
+            if (sql.contains("NOT_AUTHORIZED")) {
+                String reply = "Bạn không có quyền truy cập thông tin của căn hộ này.";
                 addToHistory("assistant", reply);
                 return new ChatResponse(reply);
             }
@@ -128,66 +176,171 @@ public class ChatService {
 
     // --- CORE LOGIC ---
 
-    private String generateSqlWithRetry(String question) throws IOException {
-        // Lần 1: Sinh SQL
-        String sql = generateSql(question, null);
+    private String generateSqlWithRetry(String question, String restrictionContext) throws IOException {
+        // Lần 1: Sinh SQL bằng Decomposer
+        String sql = decomposeAndGenerateSql(question, restrictionContext);
         
         // Thử chạy SQL (Dry Run)
         try {
+            if (sql.contains("NOT_AUTHORIZED") || sql.contains("NOT_SQL")) return sql;
             executeSql(sql); 
             return sql; // Nếu chạy OK thì trả về
         } catch (Exception e) {
             System.out.println("SQL Error (Attempt 1): " + e.getMessage());
             
-            // Lần 2: Gửi lỗi cho AI để nó tự sửa (Self-Correction)
-            String errorMsg = e.getMessage();
-            String retryPrompt = "The SQL query failed with error: \"" + errorMsg + "\".\n" +
-                                 "Please FIX the SQL based on the Schema provided above.\n" +
-                                 "Pay attention to exact table names and column names (e.g. 'room_number' vs 'roomNumber').";
-            
-            String fixedSql = generateSql(question, retryPrompt);
+            // Lần 2: Refiner (Sửa lỗi)
+            String fixedSql = refineSql(question, sql, e.getMessage(), e.getClass().getSimpleName(), restrictionContext);
             System.out.println("Fixed SQL: " + fixedSql);
             return fixedSql;
         }
     }
 
-    private String generateSql(String question, String errorContext) throws IOException {
-        JsonArray messages = new JsonArray();
+    private String decomposeAndGenerateSql(String question, String restrictionContext) throws IOException {
+        String template = "Given a 【Database schema】 description, a knowledge 【Evidence】 and the 【Question】, you need to use valid MySQL and understand the database and knowledge, and then decompose the question into subquestions for text-to-SQL generation.\n" +
+                "When generating SQL, we should always consider constraints:\n" +
+                "【Constraints】\n" +
+                "- In `SELECT <column>`, just select needed columns in the 【Question】 without any unnecessary column or value\n" +
+                "- In `FROM <table>` or `JOIN <table>`, do not include unnecessary table\n" +
+                "- If use max or min func, `JOIN <table>` FIRST, THEN use `SELECT MAX(<column>)` or `SELECT MIN(<column>)`\n" +
+                "- If [Value examples] of <column> has 'None' or None, use `JOIN <table>` or `WHERE <column> is NOT NULL` is better\n" +
+                "- If use `ORDER BY <column> ASC|DESC`, add `GROUP BY <column>` before to select distinct values\n" +
+                "\n" +
+                "==========\n" +
+                "\n" +
+                "【Database schema】\n" +
+                "{desc_str}\n" +
+                "【Foreign keys】\n" +
+                "(See schema)\n" +
+                "【Question】\n" +
+                "{query}\n" +
+                "【Evidence】\n" +
+                "{evidence}\n" +
+                "\n" +
+                "Decompose the question into sub questions, considering 【Constraints】, and generate the SQL after thinking step by step.\n" +
+                "Example format:\n" +
+                "Sub question 1: ...\n" +
+                "SQL\n" +
+                "```sql\n" +
+                "...\n" +
+                "```\n" +
+                "Sub question 2: ...\n" +
+                "SQL\n" +
+                "```sql\n" +
+                "...\n" +
+                "```\n";
+
+        String evidence = "### SEMANTIC MAPPING RULES (Vietnamese -> DB):\n" +
+                "- 'xe máy' -> `type` = 'MOTORBIKE' (in `vehicles` table)\n" +
+                "- 'ô tô' -> `type` = 'CAR'\n" +
+                "- 'số người' -> `people_count` (in `rooms` table)\n" +
+                "- 'số phòng' -> `room_number`\n" +
+                "- 'phí' -> `fees` table\n" +
+                "- 'đóng góp' -> `contributions` table\n";
         
-        // System Prompt cực kỳ chi tiết
-        JsonObject sys = new JsonObject();
-        sys.addProperty("role", "system");
-        sys.addProperty("content", 
-            "You are a MySQL Expert. Generate a SELECT query for the User Question.\n" +
-            "\n" +
-            this.schemaContext + "\n" +
-            "\n" +
-            "### SEMANTIC MAPPING RULES (Vietnamese -> DB):\n" +
-            "- 'xe máy' -> `type` = 'MOTORBIKE' (in `vehicles` table)\n" +
-            "- 'ô tô' -> `type` = 'CAR'\n" +
-            "- 'số người' -> `people_count` (in `rooms` table)\n" +
-            "- 'số phòng' -> `room_number`\n" +
-            "- 'phí' -> `fees` table\n" +
-            "- 'đóng góp' -> `contributions` table\n" +
-            "\n" +
-            "### INSTRUCTIONS:\n" +
-            "1. Use ONLY the physical table/column names listed in Schema.\n" +
-            "2. Return ONLY raw SQL. No Markdown. No explanation.\n" +
-            "3. If question is irrelevant to DB, return 'NOT_SQL'.");
-        messages.add(sys);
-
-        // Thêm lịch sử chat để hiểu ngữ cảnh
-        messages.addAll(getHistoryAsJsonArray());
-
-        // Nếu đang sửa lỗi, thêm thông tin lỗi
-        if (errorContext != null) {
-            JsonObject err = new JsonObject();
-            err.addProperty("role", "user");
-            err.addProperty("content", errorContext);
-            messages.add(err);
+        if (restrictionContext != null) {
+            evidence += "\n" + restrictionContext;
         }
 
+        String prompt = template.replace("{desc_str}", this.schemaContext)
+                                .replace("{query}", question)
+                                .replace("{evidence}", evidence);
+
+        JsonArray messages = new JsonArray();
+        JsonObject sys = new JsonObject();
+        sys.addProperty("role", "system");
+        sys.addProperty("content", "You are a MySQL Expert. Decompose the question and generate SQL. Return ONLY raw SQL in the final block.");
+        messages.add(sys);
+
+        messages.addAll(getHistoryAsJsonArray());
+
+        JsonObject user = new JsonObject();
+        user.addProperty("role", "user");
+        user.addProperty("content", prompt);
+        messages.add(user);
+
+        String response = callGroqApi(messages, 0.1);
+        return extractLastSqlBlock(response);
+    }
+
+    private String refineSql(String question, String oldSql, String errorMsg, String errorType, String restrictionContext) throws IOException {
+        String template = "【Instruction】\n" +
+                "When generating SQL, we should always consider constraints:\n" +
+                "【Constraints】\n" +
+                "- In `SELECT <column>`, just select needed columns in the 【Question】 without any unnecessary column or value\n" +
+                "- In `FROM <table>` or `JOIN <table>`, do not include unnecessary table\n" +
+                "- If use max or min func, `JOIN <table>` FIRST, THEN use `SELECT MAX(<column>)` or `SELECT MIN(<column>)`\n" +
+                "- If [Value examples] of <column> has 'None' or None, use `JOIN <table>` or `WHERE <column> is NOT NULL` is better\n" +
+                "- If use `ORDER BY <column> ASC|DESC`, add `GROUP BY <column>` before to select distinct values\n" +
+                "\n" +
+                "==========\n" +
+                "\n" +
+                "【Database schema】\n" +
+                "{desc_str}\n" +
+                "【Foreign keys】\n" +
+                "(See schema)\n" +
+                "【Question】\n" +
+                "{query}\n" +
+                "【Evidence】\n" +
+                "{evidence}\n" +
+                "【Old SQL】\n" +
+                "{sql}\n" +
+                "【MySQL Error】\n" +
+                "{sqlite_error}\n" +
+                "【Exception Class】\n" +
+                "{exception_class}\n" +
+                "\n" +
+                "Based on the 【Database schema】, 【Question】, 【Evidence】 and 【MySQL Error】, you need to fix the 【Old SQL】 and generate a new SQL.\n" +
+                "If the error is about unknown column, check the schema again.\n" +
+                "Return ONLY raw SQL. No Markdown. No explanation.";
+
+         String evidence = "### SEMANTIC MAPPING RULES (Vietnamese -> DB):\n" +
+                "- 'xe máy' -> `type` = 'MOTORBIKE' (in `vehicles` table)\n" +
+                "- 'ô tô' -> `type` = 'CAR'\n" +
+                "- 'số người' -> `people_count` (in `rooms` table)\n" +
+                "- 'số phòng' -> `room_number`\n" +
+                "- 'phí' -> `fees` table\n" +
+                "- 'đóng góp' -> `contributions` table\n";
+
+        if (restrictionContext != null) {
+            evidence += "\n" + restrictionContext;
+        }
+
+        String prompt = template.replace("{desc_str}", this.schemaContext)
+                                .replace("{query}", question)
+                                .replace("{evidence}", evidence)
+                                .replace("{sql}", oldSql)
+                                .replace("{sqlite_error}", errorMsg)
+                                .replace("{exception_class}", errorType);
+
+        JsonArray messages = new JsonArray();
+        JsonObject sys = new JsonObject();
+        sys.addProperty("role", "system");
+        sys.addProperty("content", "You are a MySQL Expert. Fix the SQL error.");
+        messages.add(sys);
+
+        JsonObject user = new JsonObject();
+        user.addProperty("role", "user");
+        user.addProperty("content", prompt);
+        messages.add(user);
+
         return callGroqApi(messages, 0.1).replaceAll("```sql", "").replaceAll("```", "").trim();
+    }
+
+    private String extractLastSqlBlock(String text) {
+        int lastIndex = text.lastIndexOf("```sql");
+        if (lastIndex == -1) {
+             lastIndex = text.lastIndexOf("```");
+        }
+        if (lastIndex != -1) {
+            String sub = text.substring(lastIndex);
+            sub = sub.replaceFirst("```(sql)?", "");
+            int closingIndex = sub.indexOf("```");
+            if (closingIndex != -1) {
+                sub = sub.substring(0, closingIndex);
+            }
+            return sub.trim();
+        }
+        return text.replaceAll("```sql", "").replaceAll("```", "").trim();
     }
 
     private boolean isChitChat(String msg) throws IOException {
@@ -286,10 +439,10 @@ public class ChatService {
         jsonBody.add("messages", messages);
 
         RequestBody body = RequestBody.create(gson.toJson(jsonBody), MediaType.get("application/json"));
-        Request request = new Request.Builder().url(API_URL).addHeader("Authorization", "Bearer " + API_KEY).post(body).build();
+        Request request = new Request.Builder().url(API_URL).addHeader("Authorization", "Bearer " + this.apiKey).post(body).build();
 
         try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) throw new IOException("API Error: " + response.code());
+            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
             String resStr = response.body().string();
             JsonObject resJson = gson.fromJson(resStr, JsonObject.class);
             return resJson.getAsJsonArray("choices").get(0).getAsJsonObject().getAsJsonObject("message").get("content").getAsString();

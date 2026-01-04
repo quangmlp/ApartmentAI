@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link, NavLink } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { FaEye, FaEyeSlash, FaUser, FaLock, FaBuilding } from "react-icons/fa";
 import chungCu from "./Chung_cu4.jpeg";
+import "./Login.css";
 
 const Login = () => {
   const { login } = useAuth();
@@ -79,179 +81,106 @@ const Login = () => {
   };
 
   return (
-    <div className="row g-0 auth-wrapper login-wrapper">
-      <div className="col-12 col-md-5 col-lg-6 h-100">
-        <div className="auth-background-holder"></div>
-        <div style={{ width: '108%', height: '100%', overflow: 'hidden' }}>
-          <div style={{ width: '108%', height: '100%', overflow: 'hidden' }}>
-            <img
-              src={chungCu}
-              style={{
-                width: 'calc(100% + 8vw)',
-                height: '100%',
-                objectFit: 'cover',
-                marginLeft: '-8vw',
-                zIndex: 999009,
-                display: 'block',
-              }}
-              alt="Chung cư"
-            />
-          </div>
+    <div className="login-page">
+      {/* Left side - Image */}
+      <div className="login-image-side">
+        <div className="login-image-overlay"></div>
+        <img src={chungCu} alt="Chung cư" className="login-background-image" />
+        <div className="login-image-content">
+          <FaBuilding className="login-hero-icon" />
+          <h1>ApartmentAI</h1>
+          <p>Hệ thống quản lý chung cư thông minh</p>
         </div>
       </div>
 
-      <div className="col-12 col-md-7 col-lg-6 auth-main-col text-center">
-        <div className="d-flex flex-column align-content-end">
-          <div className="auth-body mx-auto">
-            <p>Đăng nhập hệ thống</p>
-            <div className="auth-form-container text-start">
-              <form
-                className="auth-form"
-                method="POST"
-                onSubmit={handleLogin}
-                autoComplete={"off"}
-              >
-                {error && <div className="alert alert-danger">{error}</div>}
+      {/* Right side - Form */}
+      <div className="login-form-side">
+        <div className="login-form-container">
+          <div className="login-form-header">
+            <h2>Chào mừng trở lại!</h2>
+            <p>Đăng nhập để tiếp tục quản lý</p>
+          </div>
 
-                <div className="username mb-3">
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="username"
-                    name="username"
-                    value={formData.username}
-                    placeholder="Tên đăng nhập"
-                    onChange={(e) =>
-                      setFormData({ ...formData, username: e.target.value })
-                    }
-                    disabled={loading}
-                    style={{
-                      width: '100%',
-                      height: '40px',
-                      padding: '8px 12px',
-                      fontSize: '16px',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                </div>
+          <form className="login-form" onSubmit={handleLogin} autoComplete="off">
+            {error && (
+              <div className="login-error-alert">
+                <span className="error-icon">⚠️</span>
+                {error}
+              </div>
+            )}
 
-                <div className="password mb-3">
-                  <div className="password-field" style={{ position: 'relative' }}>
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      className="form-control"
-                      name="password"
-                      id="password"
-                      value={formData.password}
-                      placeholder="Mật khẩu"
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      disabled={loading}
-                      style={{
-                        width: '100%',
-                        height: '40px',
-                        padding: '8px 60px 8px 12px', // Adjusted padding for toggle button
-                        fontSize: '16px',
-                        boxSizing: 'border-box',
-                      }}
-                    />
-                    <span
-                      className="toggle-password"
-                      onClick={() => setShowPassword((prev) => !prev)}
-                      tabIndex={-1}
-                      style={{
-                        position: 'absolute',
-                        right: '10px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        cursor: 'pointer',
-                        color: '#007bff',
-                        fontSize: '14px',
-                        userSelect: 'none',
-                      }}
-                    >
-                      {showPassword ? "Ẩn" : "Hiện"}
-                    </span>
-                  </div>
-
-                  <div className="extra mt-3 row justify-content-between align-items-center">
-                    <div className="col-6">
-                      <label className="form-check custom-checkbox" style={{ display: "flex", alignItems: "center", cursor: "pointer", fontSize: "0.95rem" }}>
-                        <input
-                          type="checkbox"
-                          checked={rememberMe}
-                          onChange={(e) => setRememberMe(e.target.checked)}
-                          disabled={loading}
-                          style={{ position: "absolute", opacity: "0", cursor: "pointer", height: "0", width: "0" }}
-                        />
-                        <span
-                          style={{
-                            height: "18px",
-                            width: "18px",
-                            backgroundColor: "#fff",
-                            border: "1px solid #ccc",
-                            borderRadius: "4px",
-                            marginRight: "8px",
-                            display: "inline-block",
-                            position: "relative",
-                            transition: "all 0.2s ease",
-                          }}
-                        >
-                          {rememberMe && (
-                            <span
-                              style={{
-                                content: '""',
-                                position: "absolute",
-                                left: "5px",
-                                top: "2px",
-                                width: "4px",
-                                height: "9px",
-                                border: "solid #000",
-                                borderWidth: "0 2px 2px 0",
-                                transform: "rotate(45deg)",
-                                display: "block",
-                              }}
-                            ></span>
-                          )}
-                        </span>
-                        Ghi nhớ
-                      </label>
-                    </div>
-
-                    <div className="col-6 text-end">
-                      <div className="forgot-password">
-                        <Link to="/forgot">Quên mật khẩu?</Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="text-center">
-                  <button
-                    type="submit"
-                    className="btn btn-primary w-100 theme-btn mx-auto"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <span
-                        className="spinner-border spinner-border-sm"
-                        role="status"
-                        aria-hidden="true"
-                      ></span>
-                    ) : (
-                      "Đăng nhập"
-                    )}
-                  </button>
-                </div>
-              </form>
-
-              <hr />
-              <div className="auth-option text-center pt-2">
-                Chưa có tài khoản?{" "}
-                <Link className="text-link" to="/signup">
-                  Đăng ký
-                </Link>
+            <div className="login-input-group">
+              <label htmlFor="username">Tên đăng nhập</label>
+              <div className="login-input-wrapper">
+                <FaUser className="input-icon" />
+                <input
+                  type="text"
+                  id="username"
+                  name="username"
+                  value={formData.username}
+                  placeholder="Nhập tên đăng nhập"
+                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                  disabled={loading}
+                  className="login-input"
+                />
               </div>
             </div>
+
+            <div className="login-input-group">
+              <label htmlFor="password">Mật khẩu</label>
+              <div className="login-input-wrapper">
+                <FaLock className="input-icon" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  placeholder="Nhập mật khẩu"
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  disabled={loading}
+                  className="login-input"
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+            </div>
+
+            <div className="login-options">
+              <label className="login-checkbox">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  disabled={loading}
+                />
+                <span className="checkbox-mark"></span>
+                <span className="checkbox-label">Ghi nhớ đăng nhập</span>
+              </label>
+              <Link to="/forgot" className="forgot-link">Quên mật khẩu?</Link>
+            </div>
+
+            <button type="submit" className="login-submit-btn" disabled={loading}>
+              {loading ? (
+                <span className="login-spinner"></span>
+              ) : (
+                "Đăng nhập"
+              )}
+            </button>
+          </form>
+
+          <div className="login-divider">
+            <span>hoặc</span>
+          </div>
+
+          <div className="login-signup-prompt">
+            Chưa có tài khoản?{" "}
+            <Link to="/signup" className="signup-link">Đăng ký ngay</Link>
           </div>
         </div>
       </div>
