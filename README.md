@@ -1,78 +1,90 @@
-# 🏢 ApartmentAI - Hệ thống Quản lý Chung cư Thông minh
+# 🏢 ApartmentAI - Smart Apartment Management System
 
+ApartmentAI is a comprehensive solution designed to digitize apartment management processes while integrating an AI virtual assistant to enhance the resident experience and optimize the operations of the building management team. The project consists of a robust Spring Boot Backend and a modern ReactJS Frontend.
 
-ApartmentAI là một giải pháp toàn diện giúp số hóa quy trình quản lý chung cư, kết hợp với trợ lý ảo AI để nâng cao trải nghiệm cư dân và tối ưu hóa công việc của ban quản lý. Dự án bao gồm Backend mạnh mẽ với Spring Boot và Frontend hiện đại với ReactJS.
+## ✨ Key Features
 
-## ✨ Tính năng Nổi bật
+### 🤖 AI Virtual Assistant (Chatbot)
 
-### 🤖 Trợ lý ảo AI (Chatbot)
-- Hỗ trợ giải đáp thắc mắc cư dân 24/7.
-- Tích hợp trực tiếp vào giao diện người dùng.
+* Provides 24/7 support for residents' inquiries.
+* Integrated directly into the user interface.
 
-### 👥 Quản lý Cư dân & Căn hộ
-- Quản lý thông tin cư dân, hộ gia đình.
-- Quản lý trạng thái phòng (Trống, Đang ở, Đang bảo trì).
+### 👥 Resident & Apartment Management
 
-### 💰 Quản lý Tài chính & Phí
-- **Hóa đơn:** Tạo và quản lý hóa đơn điện, nước, dịch vụ hàng tháng.
-- **Phí quản lý:** Theo dõi đóng phí của từng hộ.
-- **Thống kê:** Biểu đồ trực quan về doanh thu và công nợ.
+* Manages resident and household information.
+* Manages apartment status (Vacant, Occupied, Under Maintenance).
 
-### 🚗 Quản lý Xe & Bãi đỗ
-- Đăng ký và quản lý phương tiện cư dân.
-- Quản lý slot bãi đỗ xe thông minh.
+### 💰 Financial & Fee Management
 
-### 📢 Truyền thông & Tương tác
-- **Thông báo:** Gửi thông báo từ ban quản lý đến cư dân.
-- **Phản ánh/Khiếu nại:** Cư dân gửi ý kiến, BQL tiếp nhận và xử lý.
-- **Đóng góp ý kiến:** Kênh thu thập ý kiến đóng góp xây dựng chung cư.
+* **Invoices:** Creates and manages monthly electricity, water, and service invoices.
+* **Management Fees:** Tracks fee payments for each household.
+* **Statistics:** Provides visual charts for revenue and outstanding debt.
 
-### 🛡️ Phân quyền & Bảo mật
-- Hệ thống đăng nhập/đăng ký an toàn.
-- Phân quyền chi tiết cho Admin (Ban quản lý) và User (Cư dân).
+### 🚗 Vehicle & Parking Management
+
+* Registers and manages residents' vehicles.
+* Manages parking slots intelligently.
+
+### 📢 Communication & Interaction
+
+* **Announcements:** Sends announcements from the building management team to residents.
+* **Feedback/Complaints:** Allows residents to submit feedback or complaints for the building management team to receive and process.
+* **Suggestions:** Provides a channel for collecting residents' suggestions to improve the apartment community.
+
+### 🛡️ Authorization & Security
+
+* Secure login and registration system.
+* Detailed role-based access control for Admins (Building Management) and Users (Residents).
 
 ---
 
-## 🛠️ Công nghệ Sử dụng
+## 🛠️ Technologies Used
 
 ### Backend (backend-main)
-- **Language:** Java 21
-- **Framework:** Spring Boot 3.2.0
-- **Database:** MySQL
-- **Security:** Spring Security, OAuth2 Resource Server
-- **Utilities:** Apache POI, Docx4j (Xử lý tài liệu), Lombok
+
+* **Language:** Java 21
+* **Framework:** Spring Boot 3.2.0
+* **Database:** MySQL
+* **Security:** Spring Security, OAuth2 Resource Server
+* **Utilities:** Apache POI, Docx4j (Document Processing), Lombok
 
 ### Frontend (frontend-main)
-- **Framework:** React 19
-- **Styling:** Bootstrap 5, Ant Design, Sass (SCSS)
-- **Charts:** D3.js, Flot, Chart.js (Biểu đồ thống kê)
-- **Routing:** React Router Dom
+
+* **Framework:** React 19
+* **Styling:** Bootstrap 5, Ant Design, Sass (SCSS)
+* **Charts:** D3.js, Flot, Chart.js (Statistical Charts)
+* **Routing:** React Router Dom
 
 ---
 
-## 🚀 Hướng dẫn Cài đặt & Chạy Dự án
+## 🚀 Project Installation & Execution Guide
 
-### Yêu cầu Tiên quyết
-- **Java Development Kit (JDK):** Phiên bản 21 trở lên
-- **Node.js:** Phiên bản 18 trở lên (khuyến nghị)
-- **MySQL:** Cơ sở dữ liệu
-- **Maven:** Công cụ build cho Java
+### Prerequisites
 
-### 1. Cài đặt Database
-1. Tạo database MySQL mới (ví dụ: `bluemoon_db`).
-2. (Tùy chọn) Import file SQL mẫu nếu có.
+* **Java Development Kit (JDK):** Version 21 or later
+* **Node.js:** Version 18 or later (recommended)
+* **MySQL:** Database
+* **Maven:** Java build tool
 
-### 2. Cấu hình & Chạy Backend
-1. Di chuyển vào thư mục backend:
+### 1. Database Setup
+
+1. Create a new MySQL database (e.g., `bluemoon_db`).
+2. (Optional) Import the sample SQL file, if available.
+
+### 2. Backend Configuration & Execution
+
+1. Navigate to the backend directory:
+
    ```bash
    cd backend-main
    ```
-2. Mở file `src/main/resources/application.yaml` và cấu hình kết nối database & mail server:
+2. Open `src/main/resources/application.yaml` and configure the database connection and mail server:
+
    ```yaml
    server:
      port: 22986
      servlet:
-       context-path: /demo # Base URL sẽ là /demo
+       context-path: /demo # The base URL will be /demo
 
    spring:
      datasource:
@@ -84,47 +96,54 @@ ApartmentAI là một giải pháp toàn diện giúp số hóa quy trình quả
         username: YOUR_EMAIL
         password: YOUR_APP_PASSWORD
    ```
-3. Chạy ứng dụng:
+3. Run the application:
+
    ```bash
    mvn spring-boot:run
    ```
-   Backend sẽ chạy tại: `http://localhost:22986/demo`
 
-### 3. Cài đặt & Chạy Frontend
-1. Di chuyển vào thư mục frontend:
+   The Backend will run at: `http://localhost:22986/demo`
+
+### 3. Frontend Installation & Execution
+
+1. Navigate to the frontend directory:
+
    ```bash
    cd frontend-main
    ```
-2. Cài đặt các thư viện phụ thuộc:
+2. Install the required dependencies:
+
    ```bash
    npm install
    ```
-   *Lưu ý: Nếu gặp lỗi dependency, hãy thử `npm install --legacy-peer-deps`*
-3. Chạy ứng dụng web:
+
+   *Note: If you encounter dependency errors, try running `npm install --legacy-peer-deps`.*
+3. Run the web application:
+
    ```bash
    npm start
    ```
-   Frontend sẽ mở tại: `http://localhost:3000`
+
+   The Frontend will open at: `http://localhost:3000`
 
 ---
 
-## 📂 Cấu trúc Dự án
+## 📂 Project Structure
 
 ```
 ApartmentAI/
-├── backend-main/         # Source code Backend (Spring Boot)
+├── backend-main/         # Backend source code (Spring Boot)
 │   ├── src/main/java     # Java source code (Controllers, Services, Repositories)
-│   └── src/main/resources# Config files, Static resources
-├── frontend-main/        # Source code Frontend (ReactJS)
-│   ├── src/components    # Các component tái sử dụng (Chatbot, Navbar...)
-│   ├── src/pages         # Các trang chính (Home, Login, Admin Dashboard...)
+│   └── src/main/resources# Configuration files, static resources
+├── frontend-main/        # Frontend source code (ReactJS)
+│   ├── src/components    # Reusable components (Chatbot, Navbar...)
+│   ├── src/pages         # Main pages (Home, Login, Admin Dashboard...)
 │   └── public            # Static assets
-└── README.md             # Tài liệu dự án
+└── README.md             # Project documentation
 ```
 
 ---
 
-## 🤝 Đóng góp
-Dự án được xây dựng bởi nhóm **BlueMoonProject**. Mọi đóng góp xin vui lòng tạo Pull Request hoặc gửi Issue.
+## 🤝 Contribution
 
-
+The project was developed by the **BlueMoonProject** team. All contributions are welcome. Please create a Pull Request or submit an Issue.
